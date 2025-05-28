@@ -49,6 +49,7 @@ use Laudis\Neo4j\Types\Relationship;
 use Laudis\Neo4j\Types\Time;
 use Laudis\Neo4j\Types\WGS843DPoint;
 use Laudis\Neo4j\Types\WGS84Point;
+use TypeError;
 
 use function microtime;
 
@@ -138,22 +139,26 @@ final class SummarizedResultFormatter
             }
         }
 
-        return new SummaryCounters(
-            $stats['nodes-created'] ?? 0,
-            $stats['nodes-deleted'] ?? 0,
-            $stats['relationships-created'] ?? 0,
-            $stats['relationships-deleted'] ?? 0,
-            $stats['properties-set'] ?? 0,
-            $stats['labels-added'] ?? 0,
-            $stats['labels-removed'] ?? 0,
-            $stats['indexes-added'] ?? 0,
-            $stats['indexes-removed'] ?? 0,
-            $stats['constraints-added'] ?? 0,
-            $stats['constraints-removed'] ?? 0,
-            $updateCount > 0,
-            ($stats['contains-system-updates'] ?? $stats['system-updates'] ?? 0) >= 1,
-            $stats['system-updates'] ?? 0
-        );
+        try {
+            return new SummaryCounters(
+                $stats['nodes-created'] ?? 0,
+                $stats['nodes-deleted'] ?? 0,
+                $stats['relationships-created'] ?? 0,
+                $stats['relationships-deleted'] ?? 0,
+                $stats['properties-set'] ?? 0,
+                $stats['labels-added'] ?? 0,
+                $stats['labels-removed'] ?? 0,
+                $stats['indexes-added'] ?? 0,
+                $stats['indexes-removed'] ?? 0,
+                $stats['constraints-added'] ?? 0,
+                $stats['constraints-removed'] ?? 0,
+                $updateCount > 0,
+                ($stats['contains-system-updates'] ?? $stats['system-updates'] ?? 0) >= 1,
+                $stats['system-updates'] ?? 0
+            );
+        } catch (TypeError $e) {
+            throw new \Exception('BAD STATS: ' . json_encode($stats), previous: $e);
+        }
     }
 
     /**
